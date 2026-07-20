@@ -1,23 +1,24 @@
-# CS AI Activation — Train-the-Trainer Cohort
+# Channel Sales — AI Activation Marathon
 
-The standalone participant site for the Customer Success **Train-the-Trainer Cohort**
-(Jul 13 – Aug 7 · facilitated by Chris + Rizwan).
+The standalone participant site for the Channel Partner Sales **AI Activation Marathon**
+(soft launch Thu Jul 23 · Aug 3 – Sep 21).
 
-One page plus a vendored `three.min.js` (WebGL starfield background — the page
-degrades gracefully to a CSS star field without it):
+Two pages plus a vendored `three.min.js` (WebGL starfield background — the pages
+degrade gracefully to a CSS star field without it):
 
-- **Track 1 — Weekly AI Practice**: all four weeks (AI Thinking Modes · Data
-  Intelligence · Design It, Build It, Ship It · From Participant to Program
-  Designer), 20 activities with full briefs, recommended AI tools, and the
-  Mon–Thu optional / Friday mandatory rhythm.
-- **Track 2 — Capstone or Certification**: the deeper-path choice, at the
-  bottom of the page.
-- Weekly rhythm, AI drop-in sessions, the Equinix data rule, and key dates.
+- **`index.html`** — the full participant site: all five activity weeks
+  (Rewire Your Thinking · Partner Intelligence · Partner Launch · Partner
+  Business Review · Course/Capstone Week), 22 activities with full briefs and
+  the AI skill each one teaches, the Mon–Thu optional / Friday mandatory
+  rhythm, the Partner Lifecycle checkpoints (Recruit · Onboard & Enable ·
+  Activate & GTM), the Grand Final, the Equinix data rule, and key dates.
+- **`one-pager.html`** — the print-friendly program summary.
+
+**The Grand Final:** Week 4's Full Partner Business Review is every
+participant's entry — nominations due Wed Sep 9, judging Thu–Fri Sep 10–11,
+and the winner presents at the All Hands on Mon Sep 21.
 
 ## Publish
 
-GitHub Pages → Settings → Pages → deploy from the `cs-ttt-cohort` branch, root.
+GitHub Pages → Settings → Pages → deploy from the default branch, root.
 Or copy `index.html` anywhere — it's fully self-contained.
-
-*This branch intentionally contains only the cohort site. The AI Activation
-Studio lives on `main`.*
