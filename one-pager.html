@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Train-the-Trainer Cohort · Program One-Pager</title>
+<meta name="description" content="Program summary for the Customer Success AI Activation Train-the-Trainer Cohort · Jul 13 – Aug 7.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #07071a;
+  --glass:   rgba(255,255,255,0.05);
+  --border:  rgba(255,255,255,0.12);
+  --border2: rgba(255,255,255,0.20);
+  --text:    #f2f1fb;
+  --text2:   #cdcbe8;
+  --muted:   #918fb8;
+  --vio:   #a78bfa;
+  --vio2:  #8b5cf6;
+  --lav:   #c4b5fd;
+  --pink:  #f472b6;
+  --rose:  #fb7185;
+  --teal:  #2dd4bf;
+  --sky:   #38bdf8;
+  --w1: #a78bfa; --w2: #38bdf8; --w3: #2dd4bf; --w4: #fb7185; --w5: #f472b6;
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'DM Mono', ui-monospace, Menlo, monospace;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:var(--sans); background:var(--bg); color:var(--text);
+  line-height:1.5; min-height:100vh; overflow-x:hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 72% 8%,  rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 55%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 40%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 75%, rgba(255,255,255,.28) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 82%, rgba(255,255,255,.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 95% 65%, rgba(255,255,255,.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 5%  50%, rgba(255,255,255,.35) 0%, transparent 100%);
+}
+body::after {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 45% at 75% -8%,  rgba(139,92,246,.16), transparent 65%),
+    radial-gradient(ellipse 70% 50% at 50% 110%, rgba(139,92,246,.10), transparent 65%);
+}
+#stars-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.wrap { max-width:1240px; margin:0 auto; padding:0 32px; position:relative; z-index:1; }
+
+/* header */
+.crest { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:34px 0 0; flex-wrap:wrap; }
+.crest-left { display:flex; align-items:center; gap:12px; font-weight:800; font-size:15px; }
+.crest-mark {
+  width:34px; height:34px; border-radius:10px;
+  background:linear-gradient(135deg,#c4b5fd,#8b5cf6);
+  display:grid; place-items:center; font-size:15px; color:#fff;
+  box-shadow:0 0 22px rgba(139,92,246,.45), inset 0 1px 0 rgba(255,255,255,.35);
+}
+.crest-left span.dim { color:var(--muted); font-weight:600; }
+.hbadge {
+  font-family:var(--mono); font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--lav); border:1px solid rgba(167,139,250,.35); background:rgba(167,139,250,.08);
+  padding:5px 14px; border-radius:100px; white-space:nowrap;
+}
+
+/* hero */
+.hero { padding:34px 0 10px; }
+.eyebrow {
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:3.5px; text-transform:uppercase;
+  color:var(--lav); margin-bottom:16px;
+}
+.eyebrow-dot { width:6px; height:6px; border-radius:50%; background:var(--vio);
+  box-shadow:0 0 12px var(--vio); animation:pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+h1 { font-size:clamp(30px,4.6vw,52px); font-weight:800; letter-spacing:-0.03em; line-height:1.06; }
+h1 .grad {
+  background:linear-gradient(100deg,#e9e4ff 0%,#c4b5fd 40%,#8b5cf6 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 24px rgba(139,92,246,.35));
+}
+.hero-sub { margin-top:10px; font-family:var(--mono); font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted); }
+.hero-sub b { color:var(--lav); font-weight:500; }
+
+/* meta grid */
+.meta-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin:26px 0 12px; }
+.meta-card {
+  background:linear-gradient(160deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+  border:1px solid var(--border); border-radius:14px; padding:13px 15px;
+  backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+}
+.meta-card h4 { font-family:var(--mono); font-size:8.5px; letter-spacing:2px; text-transform:uppercase; color:var(--lav); margin-bottom:5px; font-weight:500; }
+.meta-card p { font-size:12px; color:var(--text2); line-height:1.45; }
+.finale-banner {
+  border:1px solid rgba(251,113,133,.4);
+  background:linear-gradient(135deg, rgba(251,113,133,.13), rgba(244,114,182,.05));
+  border-radius:14px; padding:13px 18px; font-size:13px; color:var(--text2);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.finale-banner b { color:var(--rose); }
+
+/* section labels */
+.sec-label {
+  display:flex; align-items:center; gap:10px; margin:30px 0 14px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:3px; text-transform:uppercase; color:var(--lav);
+}
+.sec-label small { color:var(--muted); letter-spacing:1.5px; text-transform:none; font-size:10.5px; }
+.sec-label::after { content:''; flex:1; height:1px; background:linear-gradient(90deg, rgba(167,139,250,.35), transparent); }
+
+/* the arc rows */
+.arc-row {
+  display:grid; grid-template-columns:58px 1.05fr 1.5fr 0.95fr; gap:18px;
+  background:linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+  border:1px solid var(--border); border-radius:16px; padding:16px 20px; margin-bottom:10px;
+  backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+  position:relative; overflow:hidden;
+}
+.arc-row .abar { position:absolute; top:0; left:0; bottom:0; width:2.5px; }
+.arc-num {
+  font-size:34px; font-weight:900; letter-spacing:-.03em; line-height:1; padding-top:2px;
+  color:transparent; -webkit-text-stroke:1.5px rgba(196,181,253,.65);
+}
+.arc-theme h3 { font-size:15.5px; font-weight:700; letter-spacing:-.01em; line-height:1.25; }
+.arc-dates { font-family:var(--mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+.arc-cap { font-family:var(--mono); font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-top:6px; line-height:1.6; }
+.arc-tag {
+  display:inline-block; font-family:var(--mono); font-size:8.5px; font-weight:500; letter-spacing:1.2px; text-transform:uppercase;
+  border-radius:100px; padding:2.5px 9px; margin-top:7px; border:1px solid;
+}
+.arc-acts { list-style:none; }
+.arc-acts li { font-size:12px; color:var(--text2); padding:1.5px 0 1.5px 14px; position:relative; }
+.arc-acts li::before { content:""; position:absolute; left:0; top:9px; width:4px; height:4px; border-radius:50%; background:var(--vio); }
+.arc-check h5 { font-family:var(--mono); font-size:8.5px; letter-spacing:1.8px; text-transform:uppercase; color:var(--rose); margin-bottom:5px; font-weight:500; }
+.arc-check p { font-size:12px; color:var(--text2); }
+.arc-check p b { color:var(--text); }
+
+/* two-col panels */
+.duo { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.panel-card {
+  background:linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+  border:1px solid var(--border); border-radius:16px; padding:20px 22px;
+  backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+}
+.panel-card h3 { font-family:var(--mono); font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:var(--lav); margin-bottom:12px; font-weight:500; }
+.panel-card li { font-size:12.5px; color:var(--text2); list-style:none; padding:3.5px 0 3.5px 18px; position:relative; }
+.panel-card li::before { content:""; position:absolute; left:0; top:11px; width:5px; height:5px; border-radius:50%;
+  background:var(--vio); box-shadow:0 0 8px rgba(167,139,250,.6); }
+.panel-card li b { color:var(--text); }
+
+/* data rule strip */
+.rule-strip {
+  background:linear-gradient(135deg, rgba(139,92,246,.12), rgba(167,139,250,.04));
+  border:1px solid rgba(167,139,250,.4); border-radius:16px; padding:16px 22px;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  font-size:12.5px; color:var(--text2);
+}
+.rule-strip b { color:var(--lav); }
+.rule-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; align-items:center; }
+.rule-cat { font-family:var(--mono); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-right:2px; }
+.tchip {
+  font-family:var(--mono); font-size:10px; padding:3.5px 11px; border-radius:100px;
+  border:1px solid rgba(167,139,250,.35); color:var(--lav); background:rgba(167,139,250,.07);
+}
+
+/* footer */
+.next-step {
+  margin:26px 0 0; border:1px solid rgba(167,139,250,.4);
+  background:linear-gradient(135deg, rgba(139,92,246,.14), rgba(167,139,250,.05));
+  border-radius:16px; padding:16px 22px; font-size:13.5px; color:var(--text2);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+}
+.next-step b { color:var(--lav); }
+footer {
+  padding:30px 0 40px; text-align:center;
+  font-family:var(--mono); font-size:10px; letter-spacing:4px; text-transform:uppercase;
+  color:var(--muted); position:relative; z-index:1;
+}
+footer b {
+  background:linear-gradient(100deg,var(--lav),var(--vio2));
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+
+@media (max-width:1000px) {
+  .meta-grid { grid-template-columns:repeat(3,1fr); }
+  .arc-row { grid-template-columns:44px 1fr; }
+  .arc-acts { grid-column:2; }
+  .arc-check { grid-column:2; }
+}
+@media (max-width:640px) {
+  .meta-grid, .duo { grid-template-columns:1fr; }
+  .wrap { padding:0 18px; }
+}
+@media print {
+  body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  #stars-canvas { display:none; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars-canvas" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <div class="crest">
+    <div class="crest-left">
+      <div class="crest-mark">◈</div>
+      <div>CS AI Activation&nbsp;<span class="dim">· Train-the-Trainer</span></div>
+    </div>
+    <div class="hbadge">Program One-Pager · Jul 13 – Aug 7</div>
+  </div>
+
+  <section class="hero">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>Train-the-Trainer Cohort · Monthly Marathon · Facilitated by Chris + Rizwan</div>
+    <h1>Customer Success — <span class="grad">Train-the-Trainer Cohort</span></h1>
+    <div class="hero-sub">A custom program to take your AI skilling to the next stage · <b>Come · Learn · Play · Build · Share</b></div>
+  </section>
+
+  <div class="meta-grid">
+    <div class="meta-card"><h4>Audience</h4><p>CS Train-the-Trainer cohort · hand-picked, AI-versed</p></div>
+    <div class="meta-card"><h4>Format</h4><p>Monthly Marathon · 4 weeks + catch-up &amp; demo weeks</p></div>
+    <div class="meta-card"><h4>Cadence</h4><p>Mon–Thu optional, 15–20 min · Friday mandatory</p></div>
+    <div class="meta-card"><h4>Support</h4><p>AI Drop-In · Tue &amp; Fri 7 AM PT · Mon &amp; Thu 6 PM PT</p></div>
+    <div class="meta-card"><h4>Tracks</h4><p>Track 1 weekly activities · Track 2 deeper path</p></div>
+    <div class="meta-card"><h4>Outcomes</h4><p>A program you'll own · skills you can teach</p></div>
+  </div>
+  <div class="finale-banner">🏆 <b>The finale:</b> every participant presents a real, deployable AI Activation Program for their own sub-team — Friday, Aug 7. Not a graduation. A launch.</div>
+
+  <div class="sec-label">The Arc <small>— four weeks build toward the program you'll own · Fridays are mandatory</small></div>
+
+  <div class="arc-row">
+    <div class="abar" style="background:var(--w1)"></div>
+    <div class="arc-num">1</div>
+    <div class="arc-theme">
+      <h3>Rewire Your Thinking</h3>
+      <div class="arc-dates">Jul 13–17</div>
+      <div class="arc-cap">Challenge · Translate · Simplify · Reverse-Engineer</div>
+    </div>
+    <ul class="arc-acts">
+      <li>The Challenger — AI attacks your idea, not validates it</li>
+      <li>The Translator — profile three audiences first</li>
+      <li>Make the Complex Simple — analogies without inaccuracy</li>
+      <li>Reverse Engineer the Prompt — from great output to great input</li>
+    </ul>
+    <div class="arc-check"><h5>🔴 Friday · Jul 17</h5><p><b>The Situation Room</b> — all four modes on one genuinely messy, real situation.</p></div>
+  </div>
+
+  <div class="arc-row">
+    <div class="abar" style="background:var(--w2)"></div>
+    <div class="arc-num">2</div>
+    <div class="arc-theme">
+      <h3>Customer Intelligence</h3>
+      <div class="arc-dates">Jul 20–24</div>
+      <div class="arc-cap">Synthetic Data · Pattern Hunting · External Signals · Reporting</div>
+    </div>
+    <ul class="arc-acts">
+      <li>Make the Data Real — engineer a synthetic dataset</li>
+      <li>Data Detective — hunt the hidden patterns</li>
+      <li>Connect to the Real World — wire in outside signals</li>
+      <li>The Intelligence Report — a brief a leader can act on</li>
+    </ul>
+    <div class="arc-check"><h5>🔴 Friday · Jul 24</h5><p><b>The Live Dashboard</b> — one live artifact, polished enough to open a leadership meeting.</p></div>
+  </div>
+
+  <div class="arc-row">
+    <div class="abar" style="background:var(--w3)"></div>
+    <div class="arc-num">3</div>
+    <div class="arc-theme">
+      <h3>From Idea to Production</h3>
+      <div class="arc-dates">Jul 27–31</div>
+      <div class="arc-cap">Design · Build · Package · Ship (Git + GitHub)</div>
+    </div>
+    <ul class="arc-acts">
+      <li>Design the Process — by hand, then let AI read the drawing</li>
+      <li>Build the App — the sketch becomes a living application</li>
+      <li>Perfect and Package — from working to deployable</li>
+      <li>Learn GitHub — where your work will live</li>
+    </ul>
+    <div class="arc-check"><h5>🔴 Friday · Jul 31</h5><p><b>Ship It</b> — publish on GitHub Pages; a live URL for a tool you designed on Monday.</p></div>
+  </div>
+
+  <div class="arc-row" style="border-color:rgba(251,113,133,.4)">
+    <div class="abar" style="background:linear-gradient(180deg,var(--rose),var(--pink))"></div>
+    <div class="arc-num" style="-webkit-text-stroke-color:rgba(251,113,133,.6)">4</div>
+    <div class="arc-theme">
+      <h3>Absorb, Reflect, Multiply</h3>
+      <div class="arc-dates">Aug 3–7</div>
+      <div class="arc-cap">Reflection · Upskilling · Program Design</div>
+      <span class="arc-tag" style="color:var(--rose);border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.08)">Finale week</span>
+    </div>
+    <ul class="arc-acts">
+      <li>Reflect with AI — your learning journey, mirrored</li>
+      <li>Level Up with AI — a personalized upskilling track</li>
+      <li>Design Your Program — 3–4 tracks for your sub-team</li>
+      <li>Build the Foundation — a ready-to-run blueprint</li>
+    </ul>
+    <div class="arc-check"><h5>🔴 Friday · Aug 7</h5><p><b>Present Your AI Activation Plan</b> — a real program you could run with your sub-team next week.</p></div>
+  </div>
+
+  <div class="arc-row" style="border-color:rgba(45,212,191,.35)">
+    <div class="abar" style="background:var(--teal)"></div>
+    <div class="arc-num" style="-webkit-text-stroke-color:rgba(45,212,191,.55)">+</div>
+    <div class="arc-theme">
+      <h3>Catch-Up &amp; Demo Day</h3>
+      <div class="arc-dates">Aug 10–21</div>
+      <div class="arc-cap">Finish · Showcase · Celebrate</div>
+      <span class="arc-tag" style="color:var(--teal);border-color:rgba(45,212,191,.45);background:rgba(45,212,191,.07)">Weeks 5–6 · Tentative</span>
+    </div>
+    <ul class="arc-acts">
+      <li>Week 5 (Aug 10–14) — catch-up week: finish anything outstanding</li>
+      <li>Week 6 (Aug 17–21) — AI Demo Day &amp; Reflections</li>
+      <li>Closing ceremony and callouts</li>
+    </ul>
+    <div class="arc-check"><h5 style="color:var(--teal)">Showcase</h5><p><b>AI Demo Day</b> — show what you built, reflect on how far you've come.</p></div>
+  </div>
+
+  <div class="sec-label">Rhythm &amp; Tracks</div>
+  <div class="duo">
+    <div class="panel-card">
+      <h3>The weekly rhythm</h3>
+      <ul>
+        <li><b>Mon–Thu</b> — optional activities, 15–20 minutes a day; they build toward Friday.</li>
+        <li><b>Friday</b> — mandatory activity; submit in the channel.</li>
+        <li><b>AI Drop-In · optional support sessions</b> — Tue &amp; Fri 7:00 AM PT · Mon &amp; Thu 6:00 PM PT, hosted by Chris and Rizwan: Q&amp;A, activity support, certification guidance, capstone help.</li>
+      </ul>
+    </div>
+    <div class="panel-card">
+      <h3>Track 2 — your deeper path</h3>
+      <ul>
+        <li><b>Team Capstone Project</b> — 3–5 people build an applied AI solution for a real CS problem.</li>
+        <li><b>Certification of Choice</b> — an AI credential aligned to your own development goals.</li>
+        <li><b>One path per participant</b> — pick early in Week 1, complete within the program window; live support at every drop-in.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-label">Data Rule <small>— applies to every activity</small></div>
+  <div class="rule-strip">
+    🔒 All activities can be completed using <b>sample scenarios, synthetic data, or publicly available information</b>. If you plan on using anything proprietary — Equinix information, internal-only documents, data, customer information, or PII — restrict yourself to <b>internal approved tools only</b>.
+    <div class="rule-chips"><span class="rule-cat">Internal approved</span><span class="tchip">Copilot</span><span class="tchip">ACE</span><span class="tchip">SideKick</span></div>
+  </div>
+
+  <div class="sec-label">Key Dates</div>
+  <div class="duo">
+    <div class="panel-card">
+      <h3>Launch &amp; submissions</h3>
+      <ul>
+        <li><b>Thu · Jul 9</b> — soft launch: teaser + AI Journey Assessment</li>
+        <li><b>Mon · Jul 13</b> — start of the Monthly Marathon</li>
+        <li><b>Fridays · Jul 17 · 24 · 31 · Aug 7</b> — mandatory weekly submissions</li>
+        <li><b>Fri · Aug 7</b> — present your AI Activation Program</li>
+      </ul>
+    </div>
+    <div class="panel-card">
+      <h3>What every participant leaves with</h3>
+      <ul>
+        <li>A repeatable <b>AI-assisted thinking process</b> they can use and teach</li>
+        <li>A leadership-ready <b>live dashboard + intelligence report</b></li>
+        <li>A tool they designed, built, and <b>shipped to a real URL</b></li>
+        <li>An <b>AI Activation Program they own</b>, ready to run with their sub-team</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="next-step">→ <b>This is not a graduation. It's a launch</b> — every participant leaves with a program they own and a team they're ready to activate. The program multiplies.</div>
+
+</div>
+
+<footer>
+  <b>CS AI Activation</b> · Train the Trainer · The Program Multiplies
+</footer>
+
+<script src="three.min.js" defer></script>
+<script>
+window.addEventListener('load', function initStars() {
+  if (typeof THREE === 'undefined') return;
+  const canvas = document.getElementById('stars-canvas');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true }); } catch (e) { return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 2000);
+  camera.position.z = 320;
+  const PALETTE = [
+    [0.92,0.91,1.00],[0.92,0.91,1.00],[0.92,0.91,1.00],[0.92,0.91,1.00],
+    [0.82,0.76,1.00],[0.65,0.55,0.98],[0.49,0.83,0.99],[0.96,0.67,0.99],
+  ];
+  const N = Math.min(2400, Math.max(900, Math.floor(window.innerWidth * window.innerHeight / 800)));
+  const pos = new Float32Array(N*3), col = new Float32Array(N*3),
+        size = new Float32Array(N), phase = new Float32Array(N), speed = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    pos[i*3] = (Math.random()-0.5)*1400; pos[i*3+1] = (Math.random()-0.5)*900; pos[i*3+2] = -Math.random()*500+100;
+    const c = PALETTE[Math.floor(Math.random()*PALETTE.length)];
+    col[i*3]=c[0]; col[i*3+1]=c[1]; col[i*3+2]=c[2];
+    size[i] = Math.random() < 0.08 ? 6.0 + Math.random()*4.5 : 1.8 + Math.random()*2.8;
+    phase[i] = Math.random()*Math.PI*2; speed[i] = 0.4 + Math.random()*1.6;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+  geo.setAttribute('aSize',    new THREE.BufferAttribute(size, 1));
+  geo.setAttribute('aPhase',   new THREE.BufferAttribute(phase, 1));
+  geo.setAttribute('aSpeed',   new THREE.BufferAttribute(speed, 1));
+  const mat = new THREE.ShaderMaterial({
+    transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    uniforms:{ uTime:{value:0}, uPx:{value:Math.min(window.devicePixelRatio,2)} },
+    vertexShader:`
+      uniform float uPx;
+      attribute float aSize; attribute float aPhase; attribute float aSpeed; attribute vec3 color;
+      varying vec3 vColor; varying float vPhase; varying float vSpeed;
+      void main(){ vColor=color; vPhase=aPhase; vSpeed=aSpeed;
+        vec4 mv = modelViewMatrix * vec4(position,1.0);
+        gl_PointSize = aSize * uPx * (340.0 / -mv.z);
+        gl_Position = projectionMatrix * mv; }`,
+    fragmentShader:`
+      uniform float uTime;
+      varying vec3 vColor; varying float vPhase; varying float vSpeed;
+      void main(){
+        float d = length(gl_PointCoord - 0.5);
+        if (d > 0.5) discard;
+        float glow = pow(smoothstep(0.5, 0.0, d), 1.7);
+        float tw = 0.65 + 0.35 * sin(uTime * vSpeed + vPhase);
+        gl_FragColor = vec4(vColor, glow * tw); }`
+  });
+  const stars = new THREE.Points(geo, mat);
+  scene.add(stars);
+  let tx = 0, ty = 0;
+  window.addEventListener('pointermove', e => {
+    tx = (e.clientX/window.innerWidth - 0.5) * 24;
+    ty = (e.clientY/window.innerHeight - 0.5) * 14;
+  }, { passive:true });
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) { mat.uniforms.uTime.value = 1; renderer.render(scene, camera); return; }
+  const clock = new THREE.Clock();
+  (function tick() {
+    requestAnimationFrame(tick);
+    mat.uniforms.uTime.value = clock.getElapsedTime();
+    stars.rotation.z += 0.00012;
+    camera.position.x += (tx - camera.position.x) * 0.03;
+    camera.position.y += (-ty - camera.position.y) * 0.03;
+    camera.lookAt(0, 0, -200);
+    renderer.render(scene, camera);
+  })();
+});
+</script>
+
+</body>
+</html>
