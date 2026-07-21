@@ -6,9 +6,9 @@ The standalone participant site for the Channel Partner Sales **AI Activation Ma
 Two pages plus a vendored `three.min.js` (WebGL starfield background — the pages
 degrade gracefully to a CSS star field without it):
 
-- **`index.html`** — the full participant site: all five activity weeks
-  (Rewire Your Thinking · Partner Intelligence · Partner Launch · Partner
-  Business Review · Course/Capstone Week), 22 activities with full briefs and
+- **`index.html`** — the full participant site: the four core weeks plus the
+  capstone week (Rewire Your Thinking · Partner Intelligence · Partner Launch ·
+  Partner Business Review · Course/Capstone Week), 22 activities with full briefs and
   the AI skill each one teaches, the Mon–Thu optional / Friday mandatory
   rhythm, the Partner Lifecycle checkpoints (Recruit · Onboard & Enable ·
   Activate & GTM), the Grand Final, the Equinix data rule, and key dates.
