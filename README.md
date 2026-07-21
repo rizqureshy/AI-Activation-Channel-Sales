@@ -15,8 +15,8 @@ degrade gracefully to a CSS star field without it):
 - **`one-pager.html`** — the print-friendly program summary.
 
 **The Grand Final:** Week 4's Full Partner Business Review is every
-participant's entry — nominations due Wed Sep 9, judging Thu–Fri Sep 10–11,
-and the winner presents at the All Hands on Mon Sep 21.
+participant's entry — the winning PBR is presented at the All Hands on
+Mon Sep 21.
 
 ## Publish
 
