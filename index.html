@@ -54,6 +54,8 @@ body {
   -webkit-font-smoothing:antialiased;
 }
 
+#fluid-canvas { position:fixed; inset:0; z-index:0; pointer-events:none; }
+
 .wrap { max-width:1240px; margin:0 auto; padding:0 32px; position:relative; z-index:1; }
 
 /* ══════════════════════════════════════
@@ -436,6 +438,8 @@ footer b { color:var(--text); }
 </style>
 </head>
 <body>
+
+<canvas id="fluid-canvas" aria-hidden="true"></canvas>
 
 <!-- HEADER -->
 <header class="top">
@@ -902,6 +906,291 @@ render();
 </script>
 
 
+
+<script src="three.min.js" defer></script>
+<script>
+/* ══ LIVE INK — WebGL fluid simulation (three.js) ══
+   GPU stable-fluids solver: advection, vorticity confinement,
+   pressure projection. Pink + blue ink diffusing on the light canvas,
+   reacting to the pointer. Degrades to the plain page if WebGL2
+   float rendering is unavailable. */
+window.addEventListener('load', function initFluid() {
+  if (typeof THREE === 'undefined') return;
+  const canvas = document.getElementById('fluid-canvas');
+  if (!canvas) return;
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, powerPreference: 'high-performance' });
+  } catch (e) { return; }
+  const gl = renderer.getContext();
+  if (!renderer.capabilities.isWebGL2 || !gl.getExtension('EXT_color_buffer_float')) { renderer.dispose(); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.autoClear = false;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.Camera();
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
+  scene.add(mesh);
+
+  const VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
+  const prog = (frag, uniforms) => new THREE.ShaderMaterial({
+    vertexShader: VERT, fragmentShader: frag, uniforms,
+    depthTest: false, depthWrite: false, blending: THREE.NoBlending,
+  });
+
+  const fbo = (w, h) => new THREE.WebGLRenderTarget(w, h, {
+    minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+    wrapS: THREE.ClampToEdgeWrapping, wrapT: THREE.ClampToEdgeWrapping,
+    format: THREE.RGBAFormat, type: THREE.HalfFloatType,
+    depthBuffer: false, stencilBuffer: false,
+  });
+  const doubleFbo = (w, h) => ({
+    read: fbo(w, h), write: fbo(w, h), texel: new THREE.Vector2(1 / w, 1 / h),
+    swap() { const t = this.read; this.read = this.write; this.write = t; },
+  });
+  const res = base => {
+    const a = window.innerWidth / window.innerHeight;
+    return a > 1 ? [Math.round(base * a), base] : [base, Math.round(base / a)];
+  };
+
+  const [sw, sh] = res(144);
+  const [dw, dh] = res(768);
+  const velocity = doubleFbo(sw, sh);
+  const pressure = doubleFbo(sw, sh);
+  const divergence = fbo(sw, sh);
+  const curlTex = fbo(sw, sh);
+  const dye = doubleFbo(dw, dh);
+
+  const advectMat = prog(`
+    uniform sampler2D uVelocity; uniform sampler2D uSource;
+    uniform vec2 texelSize; uniform float dt; uniform float dissipation;
+    varying vec2 vUv;
+    void main(){
+      vec2 coord = vUv - dt * texture2D(uVelocity, vUv).xy * texelSize;
+      gl_FragColor = vec4(dissipation * texture2D(uSource, coord).xyz, 1.0);
+    }`, { uVelocity: { value: null }, uSource: { value: null }, texelSize: { value: velocity.texel }, dt: { value: 0.016 }, dissipation: { value: 1 } });
+
+  const splatMat = prog(`
+    uniform sampler2D uTarget; uniform float aspectRatio;
+    uniform vec3 color; uniform vec2 point; uniform float radius;
+    varying vec2 vUv;
+    void main(){
+      vec2 p = vUv - point; p.x *= aspectRatio;
+      vec3 splat = exp(-dot(p, p) / radius) * color;
+      gl_FragColor = vec4(texture2D(uTarget, vUv).xyz + splat, 1.0);
+    }`, { uTarget: { value: null }, aspectRatio: { value: 1 }, color: { value: new THREE.Vector3() }, point: { value: new THREE.Vector2() }, radius: { value: 0.004 } });
+
+  const curlMat = prog(`
+    uniform sampler2D uVelocity; uniform vec2 texelSize;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uVelocity, vUv - vec2(texelSize.x, 0.0)).y;
+      float R = texture2D(uVelocity, vUv + vec2(texelSize.x, 0.0)).y;
+      float B = texture2D(uVelocity, vUv - vec2(0.0, texelSize.y)).x;
+      float T = texture2D(uVelocity, vUv + vec2(0.0, texelSize.y)).x;
+      gl_FragColor = vec4(0.5 * (R - L - T + B), 0.0, 0.0, 1.0);
+    }`, { uVelocity: { value: null }, texelSize: { value: velocity.texel } });
+
+  const vortMat = prog(`
+    uniform sampler2D uVelocity; uniform sampler2D uCurl;
+    uniform float curl; uniform float dt; uniform vec2 texelSize;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uCurl, vUv - vec2(texelSize.x, 0.0)).x;
+      float R = texture2D(uCurl, vUv + vec2(texelSize.x, 0.0)).x;
+      float B = texture2D(uCurl, vUv - vec2(0.0, texelSize.y)).x;
+      float T = texture2D(uCurl, vUv + vec2(0.0, texelSize.y)).x;
+      float C = texture2D(uCurl, vUv).x;
+      vec2 force = 0.5 * vec2(abs(T) - abs(B), abs(R) - abs(L));
+      force /= length(force) + 0.0001;
+      force *= curl * C;
+      force.y *= -1.0;
+      vec2 vel = texture2D(uVelocity, vUv).xy + force * dt;
+      gl_FragColor = vec4(clamp(vel, -1000.0, 1000.0), 0.0, 1.0);
+    }`, { uVelocity: { value: null }, uCurl: { value: null }, curl: { value: 28 }, dt: { value: 0.016 }, texelSize: { value: velocity.texel } });
+
+  const divMat = prog(`
+    uniform sampler2D uVelocity; uniform vec2 texelSize;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uVelocity, vUv - vec2(texelSize.x, 0.0)).x;
+      float R = texture2D(uVelocity, vUv + vec2(texelSize.x, 0.0)).x;
+      float B = texture2D(uVelocity, vUv - vec2(0.0, texelSize.y)).y;
+      float T = texture2D(uVelocity, vUv + vec2(0.0, texelSize.y)).y;
+      gl_FragColor = vec4(0.5 * (R - L + T - B), 0.0, 0.0, 1.0);
+    }`, { uVelocity: { value: null }, texelSize: { value: velocity.texel } });
+
+  const pressMat = prog(`
+    uniform sampler2D uPressure; uniform sampler2D uDivergence; uniform vec2 texelSize;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uPressure, vUv - vec2(texelSize.x, 0.0)).x;
+      float R = texture2D(uPressure, vUv + vec2(texelSize.x, 0.0)).x;
+      float B = texture2D(uPressure, vUv - vec2(0.0, texelSize.y)).x;
+      float T = texture2D(uPressure, vUv + vec2(0.0, texelSize.y)).x;
+      float div = texture2D(uDivergence, vUv).x;
+      gl_FragColor = vec4((L + R + B + T - div) * 0.25, 0.0, 0.0, 1.0);
+    }`, { uPressure: { value: null }, uDivergence: { value: null }, texelSize: { value: velocity.texel } });
+
+  const gradMat = prog(`
+    uniform sampler2D uPressure; uniform sampler2D uVelocity; uniform vec2 texelSize;
+    varying vec2 vUv;
+    void main(){
+      float L = texture2D(uPressure, vUv - vec2(texelSize.x, 0.0)).x;
+      float R = texture2D(uPressure, vUv + vec2(texelSize.x, 0.0)).x;
+      float B = texture2D(uPressure, vUv - vec2(0.0, texelSize.y)).x;
+      float T = texture2D(uPressure, vUv + vec2(0.0, texelSize.y)).x;
+      vec2 vel = texture2D(uVelocity, vUv).xy - vec2(R - L, T - B);
+      gl_FragColor = vec4(vel, 0.0, 1.0);
+    }`, { uPressure: { value: null }, uVelocity: { value: null }, texelSize: { value: velocity.texel } });
+
+  const displayMat = prog(`
+    uniform sampler2D uTexture;
+    varying vec2 vUv;
+    void main(){
+      vec3 c = texture2D(uTexture, vUv).rgb;
+      float a = clamp(max(c.r, max(c.g, c.b)), 0.0, 0.92);
+      gl_FragColor = vec4(clamp(c, 0.0, 1.0), a);
+    }`, { uTexture: { value: null } });
+
+  function blit(target, mat) {
+    mesh.material = mat;
+    renderer.setRenderTarget(target);
+    renderer.render(scene, camera);
+  }
+
+  const aspect = () => window.innerWidth / window.innerHeight;
+
+  function splat(x, y, dx, dy, color, radius, amount) {
+    splatMat.uniforms.aspectRatio.value = aspect();
+    splatMat.uniforms.point.value.set(x, y);
+    splatMat.uniforms.radius.value = radius;
+    splatMat.uniforms.uTarget.value = velocity.read.texture;
+    splatMat.uniforms.color.value.set(dx, dy, 0);
+    blit(velocity.write, splatMat); velocity.swap();
+    splatMat.uniforms.uTarget.value = dye.read.texture;
+    splatMat.uniforms.color.value.set(color[0] * amount, color[1] * amount, color[2] * amount);
+    blit(dye.write, splatMat); dye.swap();
+  }
+
+  function step(dt) {
+    curlMat.uniforms.uVelocity.value = velocity.read.texture;
+    blit(curlTex, curlMat);
+
+    vortMat.uniforms.uVelocity.value = velocity.read.texture;
+    vortMat.uniforms.uCurl.value = curlTex.texture;
+    vortMat.uniforms.dt.value = dt;
+    blit(velocity.write, vortMat); velocity.swap();
+
+    divMat.uniforms.uVelocity.value = velocity.read.texture;
+    blit(divergence, divMat);
+
+    for (let i = 0; i < 22; i++) {
+      pressMat.uniforms.uPressure.value = pressure.read.texture;
+      pressMat.uniforms.uDivergence.value = divergence.texture;
+      blit(pressure.write, pressMat); pressure.swap();
+    }
+
+    gradMat.uniforms.uPressure.value = pressure.read.texture;
+    gradMat.uniforms.uVelocity.value = velocity.read.texture;
+    blit(velocity.write, gradMat); velocity.swap();
+
+    advectMat.uniforms.dt.value = dt;
+    advectMat.uniforms.uVelocity.value = velocity.read.texture;
+    advectMat.uniforms.uSource.value = velocity.read.texture;
+    advectMat.uniforms.dissipation.value = 0.985;
+    blit(velocity.write, advectMat); velocity.swap();
+
+    advectMat.uniforms.uVelocity.value = velocity.read.texture;
+    advectMat.uniforms.uSource.value = dye.read.texture;
+    advectMat.uniforms.dissipation.value = 0.992;
+    blit(dye.write, advectMat); dye.swap();
+  }
+
+  function draw() {
+    displayMat.uniforms.uTexture.value = dye.read.texture;
+    blit(null, displayMat);
+  }
+
+  /* ink palette — pink family + blue family, like ink drops in water */
+  const PINKS = [[0.97, 0.07, 0.36], [1.0, 0.18, 0.45], [0.92, 0.12, 0.55]];
+  const BLUES = [[0.02, 0.45, 0.95], [0.1, 0.6, 1.0], [0.0, 0.52, 0.88]];
+  const pick = fam => fam[Math.floor(Math.random() * fam.length)];
+
+  /* opening composition — pink cloud meets blue cloud */
+  function opening() {
+    splat(0.30, 0.55, 620, -80, PINKS[0], 0.012, 0.9);
+    splat(0.23, 0.40, 260, 240, PINKS[2], 0.007, 0.7);
+    splat(0.36, 0.68, 180, -260, PINKS[1], 0.005, 0.6);
+    splat(0.66, 0.52, -640, 90, BLUES[0], 0.012, 0.9);
+    splat(0.75, 0.66, -260, -220, BLUES[1], 0.007, 0.7);
+    splat(0.61, 0.36, -160, 280, BLUES[2], 0.005, 0.6);
+  }
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) {
+    /* settle the opening into still ink clouds, render once */
+    opening();
+    for (let i = 0; i < 110; i++) step(1 / 60);
+    draw();
+    return;
+  }
+
+  opening();
+
+  /* pointer-driven ink */
+  const queue = [];
+  let lx = null, ly = null, hueFlip = 0;
+  window.addEventListener('pointermove', e => {
+    const x = e.clientX / window.innerWidth;
+    const y = 1 - e.clientY / window.innerHeight;
+    if (lx !== null) {
+      const dx = (x - lx) * 1400, dy = (y - ly) * 1400;
+      if (Math.abs(dx) + Math.abs(dy) > 2 && queue.length < 20) {
+        const fam = Math.floor(performance.now() / 2200) % 2 ? BLUES : PINKS;
+        queue.push([x, y, dx, dy, pick(fam), 0.0032, 0.22]);
+      }
+    }
+    lx = x; ly = y;
+  }, { passive: true });
+  window.addEventListener('pointerdown', e => {
+    const x = e.clientX / window.innerWidth;
+    const y = 1 - e.clientY / window.innerHeight;
+    const fam = (hueFlip++ % 2) ? BLUES : PINKS;
+    if (queue.length < 20) queue.push([x, y, (Math.random() - 0.5) * 500, (Math.random() - 0.5) * 500, pick(fam), 0.009, 0.85]);
+  }, { passive: true });
+
+  /* ambient bursts keep it alive when idle */
+  let burstFlip = 0;
+  setInterval(() => {
+    if (document.hidden || queue.length >= 20) return;
+    const fam = (burstFlip++ % 2) ? BLUES : PINKS;
+    const ang = Math.random() * Math.PI * 2;
+    const mag = 260 + Math.random() * 420;
+    queue.push([
+      0.15 + Math.random() * 0.7, 0.2 + Math.random() * 0.6,
+      Math.cos(ang) * mag, Math.sin(ang) * mag,
+      pick(fam), 0.006 + Math.random() * 0.005, 0.55,
+    ]);
+  }, 3200);
+
+  window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  let last = performance.now();
+  (function frame(now) {
+    requestAnimationFrame(frame);
+    const dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    if (document.hidden) return;
+    for (let i = 0; i < 8 && queue.length; i++) splat.apply(null, queue.shift());
+    step(dt);
+    draw();
+  })(last);
+});
+</script>
 
 </body>
 </html>

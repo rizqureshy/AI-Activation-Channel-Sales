@@ -3,9 +3,10 @@
 The standalone participant site for the Channel Partner Sales **AI Activation Marathon**
 (soft launch Thu Jul 23 · Aug 3 – Sep 21).
 
-Two fully self-contained pages in a light, Apple-style design — no build step,
-no dependencies beyond a Google Fonts link (they degrade gracefully to system
-fonts offline):
+Two pages in a light, Apple-style design, plus a vendored `three.min.js` that
+powers the live WebGL ink-in-water background on the main site (a real GPU
+fluid simulation — pink and blue ink that swirls with the pointer; the page
+degrades gracefully to the clean light canvas without WebGL2):
 
 - **`index.html`** — the full participant site: the four core weeks plus the
   capstone week (Rewire Your Thinking · Partner Intelligence · Partner Activation ·
