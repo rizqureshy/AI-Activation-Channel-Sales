@@ -7,11 +7,11 @@ Two pages plus a vendored `three.min.js` (WebGL starfield background — the pag
 degrade gracefully to a CSS star field without it):
 
 - **`index.html`** — the full participant site: the four core weeks plus the
-  capstone week (Rewire Your Thinking · Partner Intelligence · Partner Launch ·
+  capstone week (Rewire Your Thinking · Partner Intelligence · Partner Activation ·
   Partner Business Review · Course/Capstone Week), 22 activities with full briefs and
   the AI skill each one teaches, the Mon–Thu optional / Friday mandatory
   rhythm, the Partner Lifecycle checkpoints (Recruit · Onboard & Enable ·
-  Activate & GTM), the Grand Final, the Equinix data rule, and key dates.
+  GTM & Execution), the Grand Final, the Equinix data rule, and key dates.
 - **`one-pager.html`** — the print-friendly program summary.
 
 **The Grand Final:** Week 4's Full Partner Business Review is every
