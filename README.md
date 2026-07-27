@@ -4,9 +4,10 @@ The standalone participant site for the Channel Partner Sales **AI Activation Ma
 (soft launch Thu Jul 23 · Aug 3 – Sep 21).
 
 Two pages plus a vendored `three.min.js` that powers the live WebGL
-ink-in-water background on the main site — a real GPU fluid simulation of
-salmon-red and powder-blue ink drifting on a black canvas, with a burst in
-the week's accent color on every tab change. The main site is a refined
+ink-cloud background on the main site — slow-drifting, domain-warped noise
+clouds of salmon-red and powder-blue ink on a black canvas; on every week
+tab change the clouds slowly take on that week's accent color, then settle
+back. The main site is a refined
 dark theme; the one-pager stays light for printing. Both degrade gracefully
 without WebGL2:
 
