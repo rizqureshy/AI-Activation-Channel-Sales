@@ -363,6 +363,12 @@ h1.hero-title .grad {
   color:var(--muted); padding-top:4px;
 }
 
+/* static path cards (week 5) — all content on the front, no flip */
+.fcard.static { height:auto; cursor:default; }
+.fcard.static .face { position:relative; inset:auto; height:100%; padding:20px 20px 18px; }
+.fcard.static .sec { margin:12px 0; }
+.fcard.static .f-unlock { margin-top:auto; }
+
 /* submission channel panel */
 .channel-cta {
   display:inline-flex; align-items:center; gap:8px; margin-left:auto;
@@ -810,6 +816,26 @@ function cardHtml(a, accent, idx, date) {
   const badge = a.mand
     ? `<span class="req-mand">${a.final ? 'Mandatory · Grand Final' : 'Mandatory'}</span>`
     : (a.path ? '<span class="req-opt">Choose one</span>' : '<span class="req-opt">Optional</span>');
+
+  // path cards (week 5) are wide enough to carry the full brief — no flip
+  if (a.path) {
+    return `<div class="fcard static" style="--i:${idx}">
+      <div class="face front">
+        <div class="abar" style="background:${bar}"></div>
+        <div class="f-top">
+          <span class="day-chip" style="${chipStyle}">${chip}</span>
+          ${badge}
+        </div>
+        <div class="f-emoji">${a.emoji}</div>
+        <div class="f-title">${a.title}</div>
+        <p class="f-hook">${a.hook}</p>
+        <div class="sec"><h4>Mission</h4><p>${a.mission}</p></div>
+        <div class="sec"><h4>Your submission</h4><p>${a.submission}</p></div>
+        ${a.tip ? `<div class="sec tip"><h4>💡 Pro tip</h4><p>${a.tip}</p></div>` : ''}
+        ${a.skill ? `<div class="f-unlock"><h4>The AI skill it teaches</h4><p>${a.skill}</p></div>` : ''}
+      </div>
+    </div>`;
+  }
 
   return `<div class="fcard${a.mand ? ' mand' : ''}" style="--i:${idx}" tabindex="0" role="button" aria-pressed="false"
        onclick="this.classList.toggle('flipped')"
