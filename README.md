@@ -12,8 +12,9 @@ dark theme; the one-pager stays light for printing. Both degrade gracefully
 without WebGL2:
 
 - **`index.html`** — the full participant site: the four core weeks plus the
-  capstone week (Rewire Your Thinking · Partner Intelligence · Partner Activation ·
-  Partner Business Review · Course/Capstone Week), 22 activities with full briefs and
+  bonus week (Rewire Your Thinking · Partner Intelligence · Partner Activation ·
+  Partner Business Review · Bonus Week: capstone, course/cert, or catch-up),
+  22 activities with full briefs and
   the AI skill each one teaches, the Mon–Thu optional / Friday mandatory
   rhythm, the Partner Lifecycle checkpoints (Recruit · Onboard & Enable ·
   GTM & Execution), the Grand Final, the Equinix data rule, and key dates.
