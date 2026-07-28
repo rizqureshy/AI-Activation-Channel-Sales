@@ -6,6 +6,7 @@
 <title>Channel Sales — AI Activation Marathon</title>
 <meta name="description" content="Four weeks + one capstone. One partner lifecycle. A Grand Final at All Hands. The Channel Sales AI Activation Marathon.">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="three.min.js" defer></script>
 <style>
 /* ══════════════════════════════════════
    TOKENS — light · Apple-like polish
@@ -920,7 +921,6 @@ render();
 
 
 
-<script src="three.min.js" defer></script>
 <script>
 /* ══ LIVE INK CLOUDS — WebGL (three.js) ══
    Slow-drifting ink clouds on black: two domain-warped FBM noise fields
@@ -928,10 +928,11 @@ render();
    still water. No bursts — changing week gently tints the warm cloud
    toward that week's accent color, then it settles back.
    Degrades to the plain dark page without WebGL. */
-window.addEventListener('load', function initClouds() {
-  if (typeof THREE === 'undefined') return;
+function initClouds() {
+  if (initClouds.done || typeof THREE === 'undefined') return;
   const canvas = document.getElementById('fluid-canvas');
   if (!canvas) return;
+  initClouds.done = true;
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, powerPreference: 'low-power' });
@@ -1031,7 +1032,12 @@ window.addEventListener('load', function initClouds() {
     uniforms.uAccentAmt.value = Math.max(0, uniforms.uAccentAmt.value - dt / 6);
     renderer.render(scene, camera);
   })(last);
-});
+}
+if (document.readyState === 'complete') initClouds();
+else {
+  document.addEventListener('DOMContentLoaded', initClouds);
+  window.addEventListener('load', initClouds);
+}
 </script>
 
 </body>
