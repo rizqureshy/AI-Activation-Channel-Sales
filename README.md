@@ -1,7 +1,7 @@
-# CS AI Activation — Train-the-Trainer Cohort
+# CS AI Activation — Channel Parter Sales
 
-The standalone participant site for the Customer Success **Train-the-Trainer Cohort**
-(Jul 13 – Aug 7 · facilitated by Chris + Rizwan).
+The standalone participant site for the Channel Partner Sales AI Activation Program. 
+(Jul 13 – Aug 7 · facilitated by Joseph + Rizwan).
 
 One page plus a vendored `three.min.js` (WebGL starfield background — the page
 degrades gracefully to a CSS star field without it):
