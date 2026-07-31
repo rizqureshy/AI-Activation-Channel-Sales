@@ -1,23 +1,30 @@
-# CS AI Activation — Channel Parter Sales
+# Channel Sales — AI Activation Marathon
 
-The standalone participant site for the Channel Partner Sales AI Activation Program. 
-(Jul 13 – Aug 7 · facilitated by Joseph + Rizwan).
+The standalone participant site for the Channel Partner Sales **AI Activation Marathon**
+(soft launch Thu Jul 23 · Aug 3 – Sep 21 · facilitated by Joseph + Rizwan).
 
-One page plus a vendored `three.min.js` (WebGL starfield background — the page
-degrades gracefully to a CSS star field without it):
+Two pages plus a vendored `three.min.js` that powers the live WebGL
+ink-cloud background on the main site — slow-drifting, domain-warped noise
+clouds of salmon-red and powder-blue ink on a black canvas; on every week
+tab change the clouds slowly take on that week's accent color, then settle
+back. The main site is a refined
+dark theme; the one-pager stays light for printing. Both degrade gracefully
+without WebGL2:
 
-- **Track 1 — Weekly AI Practice**: all four weeks (AI Thinking Modes · Data
-  Intelligence · Design It, Build It, Ship It · From Participant to Program
-  Designer), 20 activities with full briefs, recommended AI tools, and the
-  Mon–Thu optional / Friday mandatory rhythm.
-- **Track 2 — Capstone or Certification**: the deeper-path choice, at the
-  bottom of the page.
-- Weekly rhythm, AI drop-in sessions, the Equinix data rule, and key dates.
+- **`index.html`** — the full participant site: the four core weeks plus the
+  bonus week (Rewire Your Thinking · Partner Intelligence · Partner Activation ·
+  Partner Business Review · Bonus Week: capstone, course/cert, or catch-up),
+  22 activities with full briefs and
+  the AI skill each one teaches, the Mon–Thu optional / Friday mandatory
+  rhythm, the Partner Lifecycle checkpoints (Recruit · Onboard & Enable ·
+  GTM & Execution), the Grand Final, the Equinix data rule, and key dates.
+- **`one-pager.html`** — the print-friendly program summary.
+
+**The Grand Final:** Week 4's Full Partner Business Review is every
+participant's entry — the winning PBR is presented at the All Hands on
+Mon Sep 21.
 
 ## Publish
 
-GitHub Pages → Settings → Pages → deploy from the `cs-ttt-cohort` branch, root.
+GitHub Pages → Settings → Pages → deploy from the default branch, root.
 Or copy `index.html` anywhere — it's fully self-contained.
-
-*This branch intentionally contains only the cohort site. The AI Activation
-Studio lives on `main`.*
